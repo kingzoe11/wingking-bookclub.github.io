@@ -1,7 +1,6 @@
 // Get the total number of chapters from the HTML attribute and book ID
 const bookId = document.body.getAttribute("data-book-id");
 const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
-
 // Load progress and comments when the page loads
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing...");
@@ -9,84 +8,48 @@ document.addEventListener("DOMContentLoaded", () => {
   loadProgress();
   loadComments();
 });
-
-// Update progress and save it to Backend
+// Update progress and save it to localStorage
 function updateProgress(profileId) {
-  const chapterInput = document.getElementById(`${profileId}-chapter`);
-  const chapterNumber = parseInt(chapterInput.value, 10);
+    const chapterInput = document.getElementById(`${profileId}-chapter`);
+    const chapterNumber = parseInt(chapterInput.value, 10);
   
-  if (isNaN(chapterNumber) || chapterNumber < 0 || chapterNumber > numChapters) {
-    alert(`Please enter a valid chapter number between 0 and ${numChapters}.`);
-    return;
-  }
-
-  // Show loading indicator
-  showLoading(true);
+    // Validate the chapter number input
+    if (isNaN(chapterNumber) || chapterNumber < 0 || chapterNumber > numChapters) {
+      alert(`Please enter a valid chapter number between 0 and ${numChapters}.`);
+      return;
+    }
   
-  // Send progress update to the backend
-  fetch('/api/progress', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      bookId: bookId,
-      chapter: chapterNumber
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
+    // Save the progress to localStorage with the bookId
+    localStorage.setItem(`${bookId}-${profileId}`, chapterNumber);
+  
+    // Calculate progress percentage and update the progress bar
     const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
     updateProgressBar(profileId, progressPercentage);
+  
     console.log(`Progress updated for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
-  })
-  .catch(err => {
-    console.error("Error updating progress:", err);
-    alert("Error updating progress. Please try again later.");
-  })
-  .finally(() => {
-    // Hide loading indicator
-    showLoading(false);
-  });
-}
-
-// Load progress for all profiles from Backend
+  }  
+// Load progress for all profiles from localStorage
 function loadProgress() {
-  document.querySelectorAll(".profile").forEach((profile) => {
-    const profileId = profile.querySelector(".profile-circle").id.split("-")[0];
-
-    // Show loading indicator
-    showLoading(true);
-
-    fetch(`/api/progress?bookId=${bookId}`)
-      .then(response => response.json())
-      .then(data => {
-        const chapterNumber = data.chapter;
+    document.querySelectorAll(".profile").forEach((profile) => {
+      const profileId = profile.querySelector(".profile-circle").id.split("-")[0]; // e.g., 'profile1'
+      const savedChapter = localStorage.getItem(`${bookId}-${profileId}`);
+  
+      if (savedChapter !== null) {
+        const chapterNumber = parseInt(savedChapter, 10);
         const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
+  
+        // Update the progress bar and input field
         updateProgressBar(profileId, progressPercentage);
-
+  
         const chapterInput = document.getElementById(`${profileId}-chapter`);
         if (chapterInput) chapterInput.value = chapterNumber;
-
+  
         console.log(`Loaded progress for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
-      })
-      .catch(err => {
-        console.error("Error loading progress:", err);
-        alert("Error loading progress. Please try again later.");
-      })
-      .finally(() => {
-        // Hide loading indicator
-        showLoading(false);
-      });
-  });
-}
-
-// Show or hide the loading spinner
-function showLoading(isLoading) {
-  const loadingSpinner = document.getElementById("loading-spinner");
-  if (loadingSpinner) {
-    loadingSpinner.style.display = isLoading ? "block" : "none";
-  }
-}
-
+      } else {
+        console.log(`No saved progress found for ${profileId}.`);
+      }
+    });
+  }  
 // Update the visual progress bar
 function updateProgressBar(profileId, progressPercentage) {
   const profileCircle = document.getElementById(`${profileId}-circle`);
@@ -100,19 +63,15 @@ function updateProgressBar(profileId, progressPercentage) {
     console.error(`Profile circle not found for ${profileId}.`);
   }
 }
-
 // Dynamically generate chapter sections for comments
 function generateChapterSections() {
   const chapterContainer = document.getElementById("chapter-comments");
-
   if (!chapterContainer) {
     console.error("Chapter container not found!");
     return;
   }
-
   // Clear existing content (if any)
   chapterContainer.innerHTML = "";
-
   // Create sections for each chapter
   for (let i = 1; i <= numChapters; i++) {
     const chapterHTML = `
@@ -129,7 +88,6 @@ function generateChapterSections() {
     chapterContainer.innerHTML += chapterHTML;
   }
 }
-
 // Toggle visibility of the comment section for a chapter
 function toggleCommentSection(chapterId) {
   const commentSection = document.querySelector(`#${chapterId} .comment-section`);
@@ -139,79 +97,42 @@ function toggleCommentSection(chapterId) {
     console.error(`Comment section not found for ${chapterId}.`);
   }
 }
-
-// Submit a comment for a chapter and save it to Backend
+// Submit a comment for a chapter and save it to localStorage
 function submitComment(chapterId) {
-  const commentInput = document.getElementById(`comment-input-${chapterId}`);
-  let commentText = commentInput.value.trim();
+    const commentInput = document.getElementById(`comment-input-${chapterId}`);
+    const commentText = commentInput.value.trim();
   
-  if (commentText === "") {
-    alert("Please enter a valid comment.");
-    return;
-  }
-
-  // Simple input sanitization to prevent XSS
-  commentText = commentText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (commentText === "") {
+      alert("Please enter a valid comment.");
+      return;
+    }
   
-  // Show loading indicator
-  showLoading(true);
-
-  // Send comment to backend
-  fetch('/api/comments', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      bookId: bookId,
-      chapter: chapterId.replace('chapter', ''),
-      commentText: commentText
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    // Reload comments after submission
-    loadComments();
-    console.log("Comment submitted.");
-  })
-  .catch(err => {
-    console.error("Error submitting comment:", err);
-    alert("Error submitting comment. Please try again later.");
-  })
-  .finally(() => {
-    // Hide loading indicator
-    showLoading(false);
-  });
-
-  commentInput.value = "";
-}
-
-// Load saved comments from backend for all chapters
+    const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+    const newComment = document.createElement("div");
+    newComment.classList.add("comment");
+    newComment.innerHTML = `<p><strong>You:</strong> ${commentText}</p>`;
+    commentContainer.appendChild(newComment);
+  
+    // Save the comment to localStorage with the bookId
+    const savedComments = JSON.parse(localStorage.getItem(`${bookId}-${chapterId}`)) || [];
+    savedComments.push(commentText);
+    localStorage.setItem(`${bookId}-${chapterId}`, JSON.stringify(savedComments));
+  
+    commentInput.value = "";
+}  
+// Load saved comments from localStorage for all chapters
 function loadComments() {
-  for (let i = 1; i <= numChapters; i++) {
-    const chapterId = `chapter${i}`;
-    
-    // Show loading indicator
-    showLoading(true);
-
-    fetch(`/api/comments?bookId=${bookId}&chapter=${i}`)
-      .then(response => response.json())
-      .then(comments => {
-        const commentContainer = document.getElementById(`comment-container-${chapterId}`);
-        commentContainer.innerHTML = '';  // Clear previous comments
-
-        comments.forEach((comment) => {
-          const commentDiv = document.createElement("div");
-          commentDiv.classList.add("comment");
-          commentDiv.innerHTML = `<p>${comment.commentText}</p>`;
-          commentContainer.appendChild(commentDiv);
-        });
-      })
-      .catch(err => {
-        console.error("Error loading comments:", err);
-        alert("Error loading comments. Please try again later.");
-      })
-      .finally(() => {
-        // Hide loading indicator
-        showLoading(false);
+    for (let i = 1; i <= numChapters; i++) {
+      const chapterId = `chapter${i}`;
+      const savedComments = JSON.parse(localStorage.getItem(`${bookId}-${chapterId}`)) || [];
+      const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+  
+      savedComments.forEach((comment) => {
+        const commentDiv = document.createElement("div");
+        commentDiv.classList.add("comment");
+        commentDiv.innerHTML = `<p><strong>You:</strong> ${comment}</p>`;
+        commentContainer.appendChild(commentDiv);
       });
+    }
   }
-}
+  
