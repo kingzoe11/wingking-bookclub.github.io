@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onyx Storm</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="ccs/bookpage.css">
+</head>
+<body data-book-id="onyx-storm" data-num-chapters="100"> <!-- Set the number of chapters here -->
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Book Image Section -->
+    <section class="book-info">
+      <img src="images/OnyxStorm.jpg" alt="Onyx Storm">
+    </section>
+
+    <!-- Progress Tracker Section -->
+    <section class="progress-tracker">
+      <h2>Progress Tracker</h2>
+      <div class="profiles">
+        <!-- Profile 1 -->
+        <div class="profile">
+          <div class="profile-circle" id="profile1-circle" data-progress="0"></div>
+          <p>Bryn</p>
+          <input type="number" id="profile1-chapter" placeholder="Chapter number">
+          <button onclick="updateProgress('profile1')">Update</button>
+        </div>
+        <!-- Profile 2 -->
+        <div class="profile">
+          <div class="profile-circle" id="profile2-circle" data-progress="0"></div>
+          <p>Brooke</p>
+          <input type="number" id="profile2-chapter" placeholder="Chapter number">
+          <button onclick="updateProgress('profile2')">Update</button>
+        </div>
+        <!-- Profile 3 -->
+        <div class="profile">
+          <div class="profile-circle" id="profile3-circle" data-progress="0"></div>
+          <p>Lily</p>
+          <input type="number" id="profile3-chapter" placeholder="Chapter number">
+          <button onclick="updateProgress('profile3')">Update</button>
+        </div>
+        <!-- Profile 4 -->
+        <div class="profile">
+          <div class="profile-circle" id="profile4-circle" data-progress="0"></div>
+          <p>Zoe</p>
+          <input type="number" id="profile4-chapter" placeholder="Chapter number">
+          <button onclick="updateProgress('profile4')">Update</button>
+        </div>
+      </div>
+    </section>
+    
+  </div>
+
+  
+<!-- Chapter Comment Sections -->
+<section class="chapter-comments" id="chapter-comments">
+  <!-- Dynamically Generated Chapters will be here -->
+</section>
+
+  <script src="js/bookpage.js"></script>
+</body>
+</html>
