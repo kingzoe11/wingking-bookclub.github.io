@@ -1,42 +1,6 @@
+// Get the total number of chapters from the HTML attribute and book ID
 const bookId = document.body.getAttribute("data-book-id");
 const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
-
-const binUrl = 'https://api.jsonbin.io/v3/b/678c12b1ad19ca34f8f00034'; // JSONBin URL (replace with your bin ID)
-const apiKey = '$2a$10$6dpphzQMUY5a3cxaFMu1ouhZCXIP7nDZTgNRd3lmh9fn1S5CRF5Kq'; // Replace with your API key if necessary
-
-// Fetch data from JSONBin
-async function fetchData() {
-  try {
-    const response = await fetch(binUrl, {
-      method: 'GET',
-      headers: {
-        'X-Master-Key': apiKey, // Include if your bin is private
-      }
-    });
-    const data = await response.json();
-    return data.record; // JSONBin wraps your data in `record`
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-}
-
-// Save data to JSONBin
-async function saveData(updatedData) {
-  try {
-    const response = await fetch(binUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': apiKey,
-      },
-      body: JSON.stringify(updatedData)
-    });
-    const data = await response.json();
-    console.log('Data saved to JSONBin:', data);
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
-}
 
 // Load progress and comments when the page loads
 document.addEventListener("DOMContentLoaded", () => {
@@ -46,22 +10,81 @@ document.addEventListener("DOMContentLoaded", () => {
   loadComments();
 });
 
-// Load progress from JSONBin
-async function loadProgress() {
-  const currentData = await fetchData();
+// Update progress and save it to Backend
+function updateProgress(profileId) {
+  const chapterInput = document.getElementById(`${profileId}-chapter`);
+  const chapterNumber = parseInt(chapterInput.value, 10);
+  
+  if (isNaN(chapterNumber) || chapterNumber < 0 || chapterNumber > numChapters) {
+    alert(`Please enter a valid chapter number between 0 and ${numChapters}.`);
+    return;
+  }
 
-  document.querySelectorAll(".profile").forEach((profile) => {
-    const profileId = profile.querySelector(".profile-circle").id.split("-")[0];
-    const chapterNumber = currentData.progress[profileId] || 0;
-
+  // Show loading indicator
+  showLoading(true);
+  
+  // Send progress update to the backend
+  fetch('/api/progress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      bookId: bookId,
+      chapter: chapterNumber
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
     const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
     updateProgressBar(profileId, progressPercentage);
-
-    const chapterInput = document.getElementById(`${profileId}-chapter`);
-    if (chapterInput) chapterInput.value = chapterNumber;
-
-    console.log(`Loaded progress for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
+    console.log(`Progress updated for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
+  })
+  .catch(err => {
+    console.error("Error updating progress:", err);
+    alert("Error updating progress. Please try again later.");
+  })
+  .finally(() => {
+    // Hide loading indicator
+    showLoading(false);
   });
+}
+
+// Load progress for all profiles from Backend
+function loadProgress() {
+  document.querySelectorAll(".profile").forEach((profile) => {
+    const profileId = profile.querySelector(".profile-circle").id.split("-")[0];
+
+    // Show loading indicator
+    showLoading(true);
+
+    fetch(`/api/progress?bookId=${bookId}`)
+      .then(response => response.json())
+      .then(data => {
+        const chapterNumber = data.chapter;
+        const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
+        updateProgressBar(profileId, progressPercentage);
+
+        const chapterInput = document.getElementById(`${profileId}-chapter`);
+        if (chapterInput) chapterInput.value = chapterNumber;
+
+        console.log(`Loaded progress for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
+      })
+      .catch(err => {
+        console.error("Error loading progress:", err);
+        alert("Error loading progress. Please try again later.");
+      })
+      .finally(() => {
+        // Hide loading indicator
+        showLoading(false);
+      });
+  });
+}
+
+// Show or hide the loading spinner
+function showLoading(isLoading) {
+  const loadingSpinner = document.getElementById("loading-spinner");
+  if (loadingSpinner) {
+    loadingSpinner.style.display = isLoading ? "block" : "none";
+  }
 }
 
 // Update the visual progress bar
@@ -117,53 +140,78 @@ function toggleCommentSection(chapterId) {
   }
 }
 
-// Submit a comment for a chapter and save it to JSONBin
-async function submitComment(chapterId) {
+// Submit a comment for a chapter and save it to Backend
+function submitComment(chapterId) {
   const commentInput = document.getElementById(`comment-input-${chapterId}`);
-  const commentText = commentInput.value.trim();
-
+  let commentText = commentInput.value.trim();
+  
   if (commentText === "") {
     alert("Please enter a valid comment.");
     return;
   }
 
-  const currentData = await fetchData();
-  const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+  // Simple input sanitization to prevent XSS
+  commentText = commentText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+  // Show loading indicator
+  showLoading(true);
 
-  // Add the new comment
-  currentData.comments[chapterId] = currentData.comments[chapterId] || [];
-  currentData.comments[chapterId].push(commentText);
-
-  // Save the updated data to JSONBin
-  saveData(currentData);
-
-  // Display the comment
-  const newComment = document.createElement("div");
-  newComment.classList.add("comment");
-  newComment.innerHTML = `<p><strong>You:</strong> ${commentText}</p>`;
-  commentContainer.appendChild(newComment);
+  // Send comment to backend
+  fetch('/api/comments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      bookId: bookId,
+      chapter: chapterId.replace('chapter', ''),
+      commentText: commentText
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Reload comments after submission
+    loadComments();
+    console.log("Comment submitted.");
+  })
+  .catch(err => {
+    console.error("Error submitting comment:", err);
+    alert("Error submitting comment. Please try again later.");
+  })
+  .finally(() => {
+    // Hide loading indicator
+    showLoading(false);
+  });
 
   commentInput.value = "";
 }
 
-// Load saved comments for all chapters
-async function loadComments() {
-  const currentData = await fetchData();
-
+// Load saved comments from backend for all chapters
+function loadComments() {
   for (let i = 1; i <= numChapters; i++) {
     const chapterId = `chapter${i}`;
-    const savedComments = currentData.comments[chapterId] || [];
-    const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+    
+    // Show loading indicator
+    showLoading(true);
 
-    savedComments.forEach((comment) => {
-      const commentDiv = document.createElement("div");
-      commentDiv.classList.add("comment");
-      commentDiv.innerHTML = `<p><strong>You:</strong> ${comment}</p>`;
-      commentContainer.appendChild(commentDiv);
-    });
+    fetch(`/api/comments?bookId=${bookId}&chapter=${i}`)
+      .then(response => response.json())
+      .then(comments => {
+        const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+        commentContainer.innerHTML = '';  // Clear previous comments
+
+        comments.forEach((comment) => {
+          const commentDiv = document.createElement("div");
+          commentDiv.classList.add("comment");
+          commentDiv.innerHTML = `<p>${comment.commentText}</p>`;
+          commentContainer.appendChild(commentDiv);
+        });
+      })
+      .catch(err => {
+        console.error("Error loading comments:", err);
+        alert("Error loading comments. Please try again later.");
+      })
+      .finally(() => {
+        // Hide loading indicator
+        showLoading(false);
+      });
   }
 }
-
-
-setInterval(loadProgress, 5000); // Refresh progress every 5 seconds
-setInterval(loadComments, 5000); // Refresh comments every 5 seconds
