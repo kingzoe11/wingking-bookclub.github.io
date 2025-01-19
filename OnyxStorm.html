@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Onyx Storm</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="ccs/bookpage.css">
+  <link rel="stylesheet" href="ccs/bookpage.css"> <!-- Corrected the path -->
 </head>
 <body data-num-chapters="95"> <!-- Set the number of chapters here -->
 
@@ -60,15 +60,22 @@
   </section>
 
   <!-- Add Firebase SDK Scripts here -->
+  
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+
+<!-- Firebase Realtime Database SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+
+<!-- Firebase Authentication SDK (if needed) -->
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+
   <script type="module">
     // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-  
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
     // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const firebaseConfig = {
       apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
       authDomain: "wingkink-book-club.firebaseapp.com",
@@ -82,7 +89,9 @@
   
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    const database = getDatabase(app); // Initialize the database reference
+
+    // Add your other logic for updating progress and handling comments here
   </script>
 
   <script src="js/bookpage.js"></script>
