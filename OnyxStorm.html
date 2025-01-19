@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="ccs/bookpage.css"> <!-- Corrected the path -->
 </head>
-<body data-num-chapters="95" data-book-id="onyx-storm"> <!-- Set the number of chapters and book ID here -->
+<body data-num-chapters="95"> <!-- Set the number of chapters here -->
 
   <!-- Main Layout -->
   <div class="main-layout">
@@ -53,6 +53,7 @@
     
   </div>
 
+  
   <!-- Chapter Comment Sections -->
   <section class="chapter-comments" id="chapter-comments">
     <!-- Dynamically Generated Chapters will be here -->
@@ -93,11 +94,9 @@
     // Add your other logic for updating progress and handling comments here
   </script>
 
-  <!-- Custom Book Page JS -->
-  <script type="module" src="/wingking-bookclub.github.io/js/bookpage.js"></script>
+  <script type="module" src="/wingking-bookclub.github.io/js/bookpage.js" defer></script>
 
-  <button onclick="toggleCommentSection('chapter1')">Show Comments</button>
-  <button onclick="submitComment()">Submit Comment</button>
 </body>
 </html>
+
 
