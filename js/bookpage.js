@@ -2,7 +2,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
 import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-// Your Firebase configuration
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
   authDomain: "wingkink-book-club.firebaseapp.com",
@@ -17,6 +18,43 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);  // Updated to use getDatabase for SDK v9
+
+
+//testing data base
+// ------------------------------------------------------------------------------------------------------------------------------------------
+
+// Write to the database
+import { ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+const dbRef = ref(database);
+
+// Test writing
+set(ref(database, 'test/'), {
+  username: "test_user",
+  message: "Hello, Firebase!"
+})
+  .then(() => {
+    console.log("Data written successfully!");
+  })
+  .catch((error) => {
+    console.error("Error writing data:", error);
+  });
+
+// Test reading
+get(child(dbRef, 'test/'))
+  .then((snapshot) => {
+    if (snapshot.exists()) {
+      console.log("Data read successfully:", snapshot.val());
+    } else {
+      console.log("No data available.");
+    }
+  })
+  .catch((error) => {
+    console.error("Error reading data:", error);
+  });
+
+// ------------------------------------------------------------------------------------------------------------------------------------------
+
 
 // Get the total number of chapters from the HTML attribute and book ID (no change from local)
 const bookId = document.body.getAttribute("data-book-id");
