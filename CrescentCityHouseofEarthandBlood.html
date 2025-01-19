@@ -59,6 +59,31 @@
   <!-- Dynamically Generated Chapters will be here -->
 </section>
 
-  <script src="js/bookpage.js"></script>
+<!-- Firebase App (the core Firebase SDK) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+  import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+  // Your Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
+    authDomain: "wingkink-book-club.firebaseapp.com",
+    databaseURL: "https://wingkink-book-club-default-rtdb.firebaseio.com",
+    projectId: "wingkink-book-club",
+    storageBucket: "wingkink-book-club.firebasestorage.app",
+    messagingSenderId: "599906607161",
+    appId: "1:599906607161:web:b15cd4e072f28ebbd6ade8",
+    measurementId: "G-0MBY6P635G"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app); // Initialize the database reference
+
+  // Add your other logic for updating progress and handling comments here
+</script>
+
+<script type="module" src="/wingking-bookclub.github.io/js/bookpage.js" defer></script>
+
 </body>
 </html>
