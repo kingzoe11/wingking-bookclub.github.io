@@ -103,7 +103,7 @@ function generateChapterSections() {
         <div class="comment-section" style="display: none;">
           <div class="comment-container" id="comment-container-chapter${i}"></div>
           <input type="text" id="comment-input-chapter${i}" placeholder="Add your thoughts...">
-          <button type="button" id="submit-button-chapter${i}">Submit</button> <!-- Ensuring it's a button, not a submit button -->
+          <button type="button" id="submit-button-chapter${i}">Submit</button>
         </div>
       </div>
     `;
@@ -111,7 +111,10 @@ function generateChapterSections() {
 
     // Add event listener for the submit button programmatically
     const submitButton = document.getElementById(`submit-button-chapter${i}`);
-    submitButton.addEventListener("click", () => submitComment(`chapter${i}`));
+    submitButton.addEventListener("click", function() {
+      console.log(`Button clicked for chapter ${i}`); // Debug log
+      submitComment(`chapter${i}`);
+    });
   }
 }
 
