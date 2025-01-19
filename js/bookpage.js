@@ -2,7 +2,7 @@
 
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-//import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { getDatabase, ref, get, set, push, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -24,7 +24,7 @@ const database = getDatabase(app);  // Updated to use getDatabase for SDK v9
 // FIREBASE TEST ------------------------------------------------------------------------------------------------------------------------------------------
 
 // Import the required functions
-import { ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+//import { ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 // Use the correct variable names
 const dbRef = ref(database);
