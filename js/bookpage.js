@@ -1,6 +1,6 @@
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { ref, getDatabase, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -127,15 +127,22 @@ function generateChapterSections() {
   }
 }
 
+
 // Toggle visibility of the comment section for a chapter
 function toggleCommentSection(chapterId) {
   const commentSection = document.querySelector(`#${chapterId} .comment-section`);
   if (commentSection) {
-    commentSection.style.display = commentSection.style.display === "block" ? "none" : "block";
+    const currentDisplay = getComputedStyle(commentSection).display;
+    commentSection.style.display = currentDisplay === "none" ? "block" : "none";
   } else {
     console.error(`Comment section not found for ${chapterId}.`);
   }
 }
+
+// Make the function globally accessible
+window.toggleCommentSection = toggleCommentSection;
+
+console.log(`Toggling: ${chapterId}`, commentSection);
 
 // Submit comments to Firebase Realtime Database
 function submitComment(chapterId) {
