@@ -104,6 +104,7 @@ function generateChapterSections() {
     console.error("Chapter container not found!");
     return;
   }
+  
   // Clear existing content (if any)
   chapterContainer.innerHTML = "";
 
@@ -122,14 +123,19 @@ function generateChapterSections() {
     `;
     chapterContainer.innerHTML += chapterHTML;
 
-    // Add event listener for the submit button programmatically
+    // Add event listener for the submit button
     const submitButton = document.getElementById(`submit-button-chapter${i}`);
-    submitButton.addEventListener("click", function() {
-      console.log(`Button clicked for chapter ${i}`); // Debug log
-      submitComment(); // Submit comment for the active chapter
-    });
+    if (submitButton) {
+      submitButton.addEventListener("click", () => {
+        console.log(`Submit button clicked for chapter ${i}`); // Debug log
+        submitComment(`chapter${i}`); // Pass the chapterId dynamically
+      });
+    } else {
+      console.error(`Submit button not found for chapter ${i}`);
+    }
   }
 }
+
 
 // Toggle visibility of the comment section for a chapter
 function toggleCommentSection(chapterId) {
@@ -154,9 +160,18 @@ window.toggleCommentSection = function(chapterId) {
 
 // Submit a comment for a chapter and save it to Firebase
 function submitComment(chapterId) {
-  const commentInput = document.getElementById(`comment-input-${chapterId}`);
-  const commentText = commentInput.value.trim();
+  if (!chapterId) {
+    console.error("No chapterId provided to submitComment.");
+    return;
+  }
 
+  const commentInput = document.getElementById(`comment-input-${chapterId}`);
+  if (!commentInput) {
+    console.error(`Comment input field not found for ${chapterId}`);
+    return;
+  }
+
+  const commentText = commentInput.value.trim();
   if (commentText === "") {
     alert("Please enter a valid comment.");
     return;
@@ -168,7 +183,7 @@ function submitComment(chapterId) {
   set(newCommentRef, {
     text: commentText,
     profileId: "user", // Replace with actual profile ID if needed
-    timestamp: Date.now()
+    timestamp: Date.now(),
   })
     .then(() => {
       console.log(`Comment saved for ${chapterId}: ${commentText}`);
