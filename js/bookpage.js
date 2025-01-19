@@ -63,7 +63,10 @@ function generateChapterSections() {
   }
 }
 
+console.log(typeof toggleCommentSection); // Should log "function"
+
 // Toggle visibility of the comment section for a chapter
+// Ensure this script is not wrapped in a module or block scope
 function toggleCommentSection(chapterId) {
   const commentSection = document.querySelector(`#${chapterId} .comment-section`);
   if (commentSection) {
@@ -72,6 +75,7 @@ function toggleCommentSection(chapterId) {
     console.error(`Comment section not found for ${chapterId}.`);
   }
 }
+
 
 // Submit a comment for a chapter and save it to Firebase
 function submitComment(chapterId) {
