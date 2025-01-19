@@ -1,10 +1,4 @@
-console.log("Page Loaded Successfully!");
-
-// Get the total number of chapters from the HTML attribute and book ID
-const bookId = document.body.getAttribute("data-book-id");
-const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
   authDomain: "wingkink-book-club.firebaseapp.com",
@@ -15,6 +9,17 @@ const firebaseConfig = {
   appId: "1:599906607161:web:b15cd4e072f28ebbd6ade8",
   measurementId: "G-0MBY6P635G"
 };
+
+// Initialize Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);  // Initialize the database reference
+
+// Get the total number of chapters from the HTML attribute and book ID
+const bookId = document.body.getAttribute("data-book-id");
+const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
 
 // Load progress and comments when the page loads
 document.addEventListener("DOMContentLoaded", () => {
@@ -43,8 +48,8 @@ function updateProgress(profileId) {
     console.error("Error saving progress: ", error);
   });
 }
- 
-// Load progress for all profiles from firestone database
+
+// Load progress for all profiles from Firebase Realtime Database
 function loadProgress() {
   document.querySelectorAll(".profile").forEach((profile) => {
     const profileId = profile.querySelector(".profile-circle").id.split("-")[0];
@@ -97,6 +102,7 @@ function generateChapterSections() {
   }
   // Clear existing content (if any)
   chapterContainer.innerHTML = "";
+
   // Create sections for each chapter
   for (let i = 1; i <= numChapters; i++) {
     const chapterHTML = `
@@ -133,7 +139,7 @@ function toggleCommentSection(chapterId) {
 
 // Submit comments to Firebase Realtime Database
 function submitComment(chapterId) {
-  const commentInput = document.getElementById(`comment-input-${chapterId}`);
+  const commentInput = document.getElementById(`comment-input-chapter${chapterId}`);
   if (!commentInput) {
     console.error(`Comment input not found for ${chapterId}`);
     return;
@@ -168,30 +174,33 @@ function submitComment(chapterId) {
   });
 }
 
-// Load saved comments from localStorage for all chapters
+// Load saved comments from Firebase for all chapters
 function loadComments() {
   for (let i = 1; i <= numChapters; i++) {
     const chapterId = `chapter${i}`;
-    const commentsRef = ref(database, 'comments/' + bookId + '/' + chapterId); // Get comments for chapter
+    const commentsRef = ref(database, `comments/${bookId}/${chapterId}`); // Get comments for chapter
+    const commentContainer = document.getElementById(`comment-container-chapter${i}`);
 
-    // Fetch comments from Firebase
-    get(commentsRef).then((snapshot) => {
-      const commentContainer = document.getElementById(`comment-container-${chapterId}`);
-
-      if (snapshot.exists()) {
-        const comments = snapshot.val();
-        for (let commentKey in comments) {
-          const comment = comments[commentKey];
-          const commentDiv = document.createElement("div");
-          commentDiv.classList.add("comment");
-          commentDiv.innerHTML = `<p><strong>${comment.profileId}:</strong> ${comment.text}</p>`;
-          commentContainer.appendChild(commentDiv);
+    if (commentContainer) {
+      // Fetch comments from Firebase
+      get(commentsRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const comments = snapshot.val();
+          for (let commentKey in comments) {
+            const comment = comments[commentKey];
+            const commentDiv = document.createElement("div");
+            commentDiv.classList.add("comment");
+            commentDiv.innerHTML = `<p><strong>${comment.profileId}:</strong> ${comment.text}</p>`;
+            commentContainer.appendChild(commentDiv);
+          }
+        } else {
+          console.log(`No comments found for chapter ${i}`);
         }
-      } else {
-        console.log(`No comments found for chapter ${i}`);
-      }
-    }).catch((error) => {
-      console.error("Error loading comments: ", error);
-    });
+      }).catch((error) => {
+        console.error("Error loading comments: ", error);
+      });
+    } else {
+      console.error(`Comment container not found for chapter ${i}`);
+    }
   }
 }
