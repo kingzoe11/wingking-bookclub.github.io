@@ -1,49 +1,109 @@
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+// Initialize Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { ref, getDatabase, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-// Firebase configuration
+// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
   authDomain: "wingkink-book-club.firebaseapp.com",
   databaseURL: "https://wingkink-book-club-default-rtdb.firebaseio.com",
   projectId: "wingkink-book-club",
-  storageBucket: "wingkink-book-club.appspot.com",
+  storageBucket: "wingkink-book-club.firebasestorage.app",
   messagingSenderId: "599906607161",
   appId: "1:599906607161:web:b15cd4e072f28ebbd6ade8",
   measurementId: "G-0MBY6P635G"
 };
 
-// Initialize Firebase app if not already initialized
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);  // Initialize the database reference
 
-// Initialize the database reference
-const database = getDatabase(app);
-
-
-// Get book ID and number of chapters from HTML attributes
+// Get the total number of chapters from the HTML attribute and book ID
 const bookId = document.body.getAttribute("data-book-id");
 const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
+
+// Track the active chapter for comment submission
+let activeChapterId = null;
 
 // Load progress and comments when the page loads
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing...");
   generateChapterSections();
+  loadProgress();
   loadComments();
 });
 
+// Update progress for a specific profile
+function updateProgress(profileId) {
+  const chapterInput = document.getElementById(`${profileId}-chapter`);
+  const chapterNumber = parseInt(chapterInput.value, 10);
+
+  if (isNaN(chapterNumber) || chapterNumber < 1 || chapterNumber > numChapters) {
+    alert(`Please enter a valid chapter number between 1 and ${numChapters}.`);
+    return;
+  }
+
+  // Set the progress to Firebase Realtime Database
+  const progressRef = ref(database, 'progress/' + profileId); // Save data under 'progress/profileId'
+  set(progressRef, {
+    chapter: chapterNumber
+  }).then(() => {
+    console.log(`Progress saved for ${profileId}: Chapter ${chapterNumber}`);
+  }).catch((error) => {
+    console.error("Error saving progress: ", error);
+  });
+}
+
+// Load progress for all profiles from Firebase Realtime Database
+function loadProgress() {
+  document.querySelectorAll(".profile").forEach((profile) => {
+    const profileId = profile.querySelector(".profile-circle").id.split("-")[0];
+    const progressRef = ref(database, 'progress/' + profileId); // Get progress for profileId
+
+    // Fetch progress from Firebase
+    get(progressRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const chapterNumber = snapshot.val().chapter;
+        const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
+
+        // Update the progress bar
+        updateProgressBar(profileId, progressPercentage);
+
+        // Update input field with saved chapter number
+        const chapterInput = document.getElementById(`${profileId}-chapter`);
+        if (chapterInput) chapterInput.value = chapterNumber;
+
+        console.log(`Loaded progress for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%)`);
+      } else {
+        console.log(`No progress found for ${profileId}`);
+      }
+    }).catch((error) => {
+      console.error("Error loading progress: ", error);
+    });
+  });
+}
+
+// Update the visual progress bar
+function updateProgressBar(profileId, progressPercentage) {
+  const profileCircle = document.getElementById(`${profileId}-circle`);
+  if (profileCircle) {
+    profileCircle.style.background = `conic-gradient(
+      #4caf50 0% ${progressPercentage}%,
+      #d3d3d3 ${progressPercentage}% 100%
+    )`;
+    profileCircle.setAttribute("data-progress", `${progressPercentage}%`);
+  } else {
+    console.error(`Profile circle not found for ${profileId}.`);
+  }
+}
+
 // Dynamically generate chapter sections for comments
 function generateChapterSections() {
+  console.log("Generating chapter sections..."); // Debug log
   const chapterContainer = document.getElementById("chapter-comments");
   if (!chapterContainer) {
     console.error("Chapter container not found!");
     return;
   }
-
   // Clear existing content (if any)
   chapterContainer.innerHTML = "";
 
@@ -56,11 +116,18 @@ function generateChapterSections() {
         <div class="comment-section" style="display: none;">
           <div class="comment-container" id="comment-container-chapter${i}"></div>
           <input type="text" id="comment-input-chapter${i}" placeholder="Add your thoughts...">
-          <button onclick="submitComment('chapter${i}')">Submit</button>
+          <button type="button" id="submit-button-chapter${i}">Submit</button>
         </div>
       </div>
     `;
     chapterContainer.innerHTML += chapterHTML;
+
+    // Add event listener for the submit button programmatically
+    const submitButton = document.getElementById(`submit-button-chapter${i}`);
+    submitButton.addEventListener("click", function() {
+      console.log(`Button clicked for chapter ${i}`); // Debug log
+      submitComment(); // Submit comment for the active chapter
+    });
   }
 }
 
@@ -73,6 +140,17 @@ function toggleCommentSection(chapterId) {
     console.error(`Comment section not found for ${chapterId}.`);
   }
 }
+
+// Ensure the function is globally accessible
+window.toggleCommentSection = function(chapterId) {
+  const commentSection = document.querySelector(`#${chapterId} .comment-section`);
+  if (commentSection) {
+    const currentDisplay = getComputedStyle(commentSection).display;
+    commentSection.style.display = currentDisplay === "none" ? "block" : "none";
+  } else {
+    console.error(`Comment section not found for ${chapterId}.`);
+  }
+};
 
 // Submit a comment for a chapter and save it to Firebase
 function submitComment(chapterId) {
@@ -132,5 +210,3 @@ function loadComments() {
       });
   }
 }
-
-
