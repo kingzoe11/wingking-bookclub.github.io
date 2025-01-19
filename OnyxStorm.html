@@ -53,29 +53,17 @@
     
   </div>
 
-  
   <!-- Chapter Comment Sections -->
   <section class="chapter-comments" id="chapter-comments">
     <!-- Dynamically Generated Chapters will be here -->
   </section>
 
-  <!-- Add Firebase SDK Scripts here -->
-  
-<!-- Firebase App (the core Firebase SDK) -->
-<script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-
-<!-- Firebase Realtime Database SDK -->
-<script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-
-<!-- Firebase Authentication SDK (if needed) -->
-<script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-
+  <!-- Firebase App (the core Firebase SDK) -->
   <script type="module">
-    // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-    // Your web app's Firebase configuration
+    // Your Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
       authDomain: "wingkink-book-club.firebaseapp.com",
@@ -94,12 +82,8 @@
     // Add your other logic for updating progress and handling comments here
   </script>
 
-  <script type="module" src="/wingking-bookclub.github.io/js/bookpage-local.js" defer></script>
-
-  <button onclick="toggleCommentSection('chapter1')">Show Comments</button>
-  <button onclick="submitComment('chapter1')">Submit Comment</button>
+  <script type="module" src="/wingking-bookclub.github.io/js/bookpage2.js" defer></script>
 
 </body>
 </html>
-
 
