@@ -241,6 +241,7 @@ function submitComment(chapterId) {
 
   }
   
+  window.submitComment = submitComment;
 
 // Load saved comments from Firebase for all chapters
 function loadComments() {
