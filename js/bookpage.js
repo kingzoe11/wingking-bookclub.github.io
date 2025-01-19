@@ -1,3 +1,5 @@
+console.log("Page Loaded Successfully!");
+
 // Get the total number of chapters from the HTML attribute and book ID
 const bookId = document.body.getAttribute("data-book-id");
 const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
@@ -87,6 +89,7 @@ function updateProgressBar(profileId, progressPercentage) {
 
 // Dynamically generate chapter sections for comments
 function generateChapterSections() {
+  console.log("Generating chapter sections..."); // Debug log
   const chapterContainer = document.getElementById("chapter-comments");
   if (!chapterContainer) {
     console.error("Chapter container not found!");
