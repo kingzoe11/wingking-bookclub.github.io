@@ -23,13 +23,14 @@ const database = getDatabase(app);  // Updated to use getDatabase for SDK v9
 
 // FIREBASE TEST ------------------------------------------------------------------------------------------------------------------------------------------
 
-// Write to the database
-import { reff, sett, gett, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+// Import the required functions
+import { ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-const dbRef = reff(database);
+// Use the correct variable names
+const dbRef = ref(database);
 
-// Test writing
-set(reff(database, 'test/'), {
+// Test writing to the database
+set(ref(database, 'test/'), {
   username: "test_user",
   message: "Hello, Firebase!"
 })
@@ -40,7 +41,7 @@ set(reff(database, 'test/'), {
     console.error("Error writing data:", error);
   });
 
-// Test reading
+// Test reading from the database
 get(child(dbRef, 'test/'))
   .then((snapshot) => {
     if (snapshot.exists()) {
