@@ -103,11 +103,15 @@ function generateChapterSections() {
         <div class="comment-section" style="display: none;">
           <div class="comment-container" id="comment-container-chapter${i}"></div>
           <input type="text" id="comment-input-chapter${i}" placeholder="Add your thoughts...">
-          <button onclick="submitComment('chapter${i}')">Submit</button>
+          <button type="button" id="submit-button-chapter${i}">Submit</button> <!-- Ensuring it's a button, not a submit button -->
         </div>
       </div>
     `;
     chapterContainer.innerHTML += chapterHTML;
+
+    // Add event listener for the submit button programmatically
+    const submitButton = document.getElementById(`submit-button-chapter${i}`);
+    submitButton.addEventListener("click", () => submitComment(`chapter${i}`));
   }
 }
 
@@ -121,9 +125,14 @@ function toggleCommentSection(chapterId) {
   }
 }
 
-//submit comments to firestone database 
+// Submit comments to Firebase Realtime Database
 function submitComment(chapterId) {
   const commentInput = document.getElementById(`comment-input-${chapterId}`);
+  if (!commentInput) {
+    console.error(`Comment input not found for ${chapterId}`);
+    return;
+  }
+
   const commentText = commentInput.value.trim();
 
   if (commentText === "") {
@@ -131,22 +140,26 @@ function submitComment(chapterId) {
     return;
   }
 
+  console.log(`Submitting comment for ${chapterId}: ${commentText}`);
+
   // Get the comments reference for the chapter
-  const commentsRef = ref(database, 'comments/' + bookId + '/' + chapterId); // comments/bookId/chapterId
+  const commentsRef = ref(database, `comments/${bookId}/${chapterId}`); // comments/bookId/chapterId
   const newCommentKey = push(commentsRef).key; // Generate a unique key for the new comment
 
   // Add the comment to Firebase under this unique key
-  set(ref(database, 'comments/' + bookId + '/' + chapterId + '/' + newCommentKey), {
+  set(ref(database, `comments/${bookId}/${chapterId}/${newCommentKey}`), {
     text: commentText,
     profileId: 'user', // Replace with actual profileId if needed
     timestamp: Date.now() // Optional: Add a timestamp for sorting comments
   }).then(() => {
     console.log(`Comment saved for chapter ${chapterId}: ${commentText}`);
+
+    // After submitting, clear the input field and reload comments (optional)
+    commentInput.value = ""; // Clear input field after submission
+    loadComments(); // Reload comments after submission
   }).catch((error) => {
     console.error("Error saving comment: ", error);
   });
-
-  commentInput.value = ""; // Clear input field after submission
 }
 
 // Load saved comments from localStorage for all chapters
