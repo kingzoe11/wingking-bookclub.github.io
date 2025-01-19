@@ -54,10 +54,36 @@
   </div>
 
   
-<!-- Chapter Comment Sections -->
-<section class="chapter-comments" id="chapter-comments">
-  <!-- Dynamically Generated Chapters will be here -->
-</section>
+  <!-- Chapter Comment Sections -->
+  <section class="chapter-comments" id="chapter-comments">
+    <!-- Dynamically Generated Chapters will be here -->
+  </section>
+
+  <!-- Add Firebase SDK Scripts here -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
+      authDomain: "wingkink-book-club.firebaseapp.com",
+      databaseURL: "https://wingkink-book-club-default-rtdb.firebaseio.com",
+      projectId: "wingkink-book-club",
+      storageBucket: "wingkink-book-club.firebasestorage.app",
+      messagingSenderId: "599906607161",
+      appId: "1:599906607161:web:b15cd4e072f28ebbd6ade8",
+      measurementId: "G-0MBY6P635G"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
 
   <script src="js/bookpage.js"></script>
 </body>
