@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update progress and save it to Firebase
   function updateProgress(profileId) {
-      const chapterInput = document.getElementById(`${bookId}-${profileId}-chapter`);
+      const chapterInput = document.getElementById(`${profileId}-chapter`);
       const chapterNumber = parseInt(chapterInput.value, 10);
   
       // Validate the chapter number input
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
       // Calculate progress percentage and update the progress bar
       const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
-      updateProgressBar(`${bookId}-${profileId}`, progressPercentage);
+      updateProgressBar(profileId, progressPercentage);
 
       console.log(`Progress updated for${bookId} - ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
     }
@@ -130,8 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
   
           // Update the progress bar and input field
-          updateProgressBar(`${bookId}-${profileId}`, progressPercentage);
-          const chapterInput = document.getElementById(`${bookId}-${profileId}-chapter`);
+          updateProgressBar(profileId, progressPercentage);
+          const chapterInput = document.getElementById(`${profileId}-chapter`);
           if (chapterInput) chapterInput.value = chapterNumber;
   
           console.log(`Loaded progress for ${bookId} - ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%)`);
