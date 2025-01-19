@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 //PROGRESS FUNCTIONS ------------------------------------------------------------------------------------------------------------------------------------------
 
   // Update progress and save it to Firebase
-  function updateProgress(bookId, profileId) {
+  function updateProgress(profileId) {
       const chapterInput = document.getElementById(`${bookId}-${profileId}-chapter`);
       const chapterNumber = parseInt(chapterInput.value, 10);
   
@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   
   // Load progress for all profiles from Firebase
-  function loadProgress(bookId) {
+  function loadProgress() {
     document.querySelectorAll(".profile").forEach((profile) => {
       const profileId = profile.querySelector(".profile-circle").id.split("-")[0]; // e.g., 'profile1'
 
