@@ -71,39 +71,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
 //PROGRESS FUNCTIONS ------------------------------------------------------------------------------------------------------------------------------------------
 
-// Update progress and save it to Firebase
-function updateProgress(profileId) {
-    const chapterInput = document.getElementById(`${profileId}-chapter`);
-    const chapterNumber = parseInt(chapterInput.value, 10);
+  // Update progress and save it to Firebase
+  function updateProgress(profileId) {
+      const chapterInput = document.getElementById(`${profileId}-chapter`);
+      const chapterNumber = parseInt(chapterInput.value, 10);
   
-    // Validate the chapter number input
-    if (isNaN(chapterNumber) || chapterNumber < 0 || chapterNumber > numChapters) {
-      alert(`Please enter a valid chapter number between 0 and ${numChapters}.`);
-      return;
+      // Validate the chapter number input
+      if (isNaN(chapterNumber) || chapterNumber < 0 || chapterNumber > numChapters) {
+        alert(`Please enter a valid chapter number between 0 and ${numChapters}.`);
+        return;
+      }
+
+      //// Save the progress to localStorage with the bookId
+      // localStorage.setItem(`${bookId}-${profileId}`, chapterNumber);
+  
+      // Save progress to Firebase using the updated syntax
+      const progressRef = ref(database, `progress/${profileId}`);
+      set(progressRef, {
+        chapter: chapterNumber
+      }).then(() => {
+        console.log(`Progress saved for ${profileId}: Chapter ${chapterNumber}`);
+      }).catch((error) => {
+        console.error("Error saving progress: ", error);
+      });
+  
+      // Calculate progress percentage and update the progress bar
+      const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
+      updateProgressBar(profileId, progressPercentage);
+
+      console.log(`Progress updated for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
     }
 
-    //// Save the progress to localStorage with the bookId
-    // localStorage.setItem(`${bookId}-${profileId}`, chapterNumber);
-  
-    // Save progress to Firebase using the updated syntax
-    const progressRef = ref(database, `progress/${profileId}`);
-    set(progressRef, {
-      chapter: chapterNumber
-    }).then(() => {
-      console.log(`Progress saved for ${profileId}: Chapter ${chapterNumber}`);
-    }).catch((error) => {
-      console.error("Error saving progress: ", error);
-    });
-  
-    // Calculate progress percentage and update the progress bar
-    const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
-    updateProgressBar(profileId, progressPercentage);
+    window.updateProgress = updateProgress;
 
-    console.log(`Progress updated for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
-  }
   
-// Load progress for all profiles from Firebase
-function loadProgress() {
+  // Load progress for all profiles from Firebase
+  function loadProgress() {
     document.querySelectorAll(".profile").forEach((profile) => {
       const profileId = profile.querySelector(".profile-circle").id.split("-")[0]; // e.g., 'profile1'
 
@@ -139,22 +142,22 @@ function loadProgress() {
         console.error("Error loading progress: ", error);
       });
     });
-  }
+    }
   
 
-// Update the visual progress bar (no change from local)
-function updateProgressBar(profileId, progressPercentage) {
-  const profileCircle = document.getElementById(`${profileId}-circle`);
-  if (profileCircle) {
-    profileCircle.style.background = `conic-gradient(
-      #4caf50 0% ${progressPercentage}%,
-      #d3d3d3 ${progressPercentage}% 100%
-    )`;
-    profileCircle.setAttribute("data-progress", `${progressPercentage}%`);
-  } else {
-    console.error(`Profile circle not found for ${profileId}.`);
-  }
-}
+  // Update the visual progress bar (no change from local)
+  function updateProgressBar(profileId, progressPercentage) {
+    const profileCircle = document.getElementById(`${profileId}-circle`);
+    if (profileCircle) {
+      profileCircle.style.background = `conic-gradient(
+        #4caf50 0% ${progressPercentage}%,
+        #d3d3d3 ${progressPercentage}% 100%
+      )`;
+      profileCircle.setAttribute("data-progress", `${progressPercentage}%`);
+    } else {
+      console.error(`Profile circle not found for ${profileId}.`);
+    }
+    }
 
 // DISCUSSION BOARD FUNCTIONS -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -196,6 +199,8 @@ function toggleCommentSection(chapterId) {
     console.error(`Comment section not found for ${chapterId}.`);
   }
 }
+
+window.toggleCommentSection = toggleCommentSection;
 
 // Submit a comment for a chapter and save it to Firebase
 function submitComment(chapterId) {
