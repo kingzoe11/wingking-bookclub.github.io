@@ -98,13 +98,13 @@ function updateProgressBar(profileId, progressPercentage) {
 
 // Dynamically generate chapter sections for comments
 function generateChapterSections() {
-  console.log("Generating chapter sections..."); // Debug log
   const chapterContainer = document.getElementById("chapter-comments");
   if (!chapterContainer) {
     console.error("Chapter container not found!");
     return;
   }
-  // Clear existing content (if any)
+
+  // Clear existing content
   chapterContainer.innerHTML = "";
 
   // Create sections for each chapter
@@ -122,29 +122,18 @@ function generateChapterSections() {
     `;
     chapterContainer.innerHTML += chapterHTML;
 
-    // Add event listener for the submit button programmatically
-    const submitButton = document.getElementById(`submit-button-chapter${i}`);
-    submitButton.addEventListener("click", function() {
-      console.log(`Button clicked for chapter ${i}`); // Debug log
-      submitComment(); // Submit comment for the active chapter
+    // Add event listener for the submit button
+    document.getElementById(`submit-button-chapter${i}`).addEventListener("click", () => {
+      submitComment(`chapter${i}`);
     });
+
+    // Load comments for the chapter
+    loadComments(`chapter${i}`);
   }
 }
 
 // Toggle visibility of the comment section for a chapter
-function toggleCommentSection(chapterId) {
-  activeChapterId = chapterId;  // Set the active chapter when toggled
-  const commentSection = document.querySelector(`#${chapterId} .comment-section`);
-  if (commentSection) {
-    const currentDisplay = getComputedStyle(commentSection).display;
-    commentSection.style.display = currentDisplay === "none" ? "block" : "none";
-  } else {
-    console.error(`Comment section not found for ${chapterId}.`);
-  }
-}
-
-// Ensure the function is globally accessible
-window.toggleCommentSection = function(chapterId) {
+window.toggleCommentSection = function (chapterId) {
   const commentSection = document.querySelector(`#${chapterId} .comment-section`);
   if (commentSection) {
     const currentDisplay = getComputedStyle(commentSection).display;
@@ -154,76 +143,69 @@ window.toggleCommentSection = function(chapterId) {
   }
 };
 
-
 // Submit comments to Firebase Realtime Database
-function submitComment() {
-  if (!activeChapterId) {
-    console.error("No active chapter selected.");
-    return;
-  }
-
-  const commentInput = document.getElementById(`comment-input-${activeChapterId}`);
+function submitComment(chapterId) {
+  const commentInput = document.getElementById(`comment-input-${chapterId}`);
   if (!commentInput) {
-    console.error(`Comment input not found for ${activeChapterId}`);
+    console.error(`Comment input not found for ${chapterId}`);
     return;
   }
 
   const commentText = commentInput.value.trim();
-
   if (commentText === "") {
     alert("Please enter a valid comment.");
     return;
   }
 
-  console.log(`Submitting comment for ${activeChapterId}: ${commentText}`);
+  const commentsRef = ref(database, `comments/${bookId}/${chapterId}`);
+  const newCommentRef = push(commentsRef);
 
-  // Get the comments reference for the chapter
-  const commentsRef = ref(database, `comments/${bookId}/${activeChapterId}`); // comments/bookId/chapterId
-  const newCommentKey = push(commentsRef).key; // Generate a unique key for the new comment
-
-  // Add the comment to Firebase under this unique key
-  set(ref(database, `comments/${bookId}/${activeChapterId}/${newCommentKey}`), {
+  set(newCommentRef, {
     text: commentText,
     profileId: 'user', // Replace with actual profileId if needed
-    timestamp: Date.now() // Optional: Add a timestamp for sorting comments
-  }).then(() => {
-    console.log(`Comment saved for chapter ${activeChapterId}: ${commentText}`);
-
-    // After submitting, clear the input field and reload comments (optional)
-    commentInput.value = ""; // Clear input field after submission
-    loadComments(); // Reload comments after submission
-  }).catch((error) => {
-    console.error("Error saving comment: ", error);
-  });
+    timestamp: Date.now()
+  })
+    .then(() => {
+      console.log(`Comment saved for ${chapterId}: ${commentText}`);
+      commentInput.value = ""; // Clear input field
+      loadComments(chapterId); // Reload comments
+    })
+    .catch((error) => {
+      console.error("Error saving comment: ", error);
+    });
 }
 
-// Load saved comments from Firebase for all chapters
-function loadComments() {
-  for (let i = 1; i <= numChapters; i++) {
-    const chapterId = `chapter${i}`;
-    const commentsRef = ref(database, `comments/${bookId}/${chapterId}`); // Get comments for chapter
-    const commentContainer = document.getElementById(`comment-container-chapter${i}`);
+// Load saved comments from Firebase for a specific chapter
+function loadComments(chapterId) {
+  const commentsRef = ref(database, `comments/${bookId}/${chapterId}`);
+  const commentContainer = document.getElementById(`comment-container-${chapterId}`);
 
-    if (commentContainer) {
-      // Fetch comments from Firebase
-      get(commentsRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const comments = snapshot.val();
-          for (let commentKey in comments) {
-            const comment = comments[commentKey];
-            const commentDiv = document.createElement("div");
-            commentDiv.classList.add("comment");
-            commentDiv.innerHTML = `<p><strong>${comment.profileId}:</strong> ${comment.text}</p>`;
-            commentContainer.appendChild(commentDiv);
-          }
-        } else {
-          console.log(`No comments found for chapter ${i}`);
-        }
-      }).catch((error) => {
-        console.error("Error loading comments: ", error);
-      });
-    } else {
-      console.error(`Comment container not found for chapter ${i}`);
-    }
+  if (!commentContainer) {
+    console.error(`Comment container not found for ${chapterId}`);
+    return;
   }
+
+  // Clear existing comments
+  commentContainer.innerHTML = "";
+
+  get(commentsRef)
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const comments = snapshot.val();
+        for (const commentKey in comments) {
+          const comment = comments[commentKey];
+          const commentDiv = document.createElement("div");
+          commentDiv.classList.add("comment");
+          commentDiv.innerHTML = `<p><strong>${comment.profileId}:</strong> ${comment.text}</p>`;
+          commentContainer.appendChild(commentDiv);
+        }
+      } else {
+        console.log(`No comments found for ${chapterId}`);
+      }
+    })
+    .catch((error) => {
+      console.error(`Error loading comments for ${chapterId}:`, error);
+    });
 }
+
+
