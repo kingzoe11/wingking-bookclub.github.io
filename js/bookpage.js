@@ -2,7 +2,7 @@
 
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+//import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
