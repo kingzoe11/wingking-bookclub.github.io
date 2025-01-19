@@ -1,3 +1,7 @@
+// Initialize Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
 // Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
@@ -9,10 +13,6 @@ const firebaseConfig = {
   appId: "1:599906607161:web:b15cd4e072f28ebbd6ade8",
   measurementId: "G-0MBY6P635G"
 };
-
-// Initialize Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);  // Initialize the database reference
