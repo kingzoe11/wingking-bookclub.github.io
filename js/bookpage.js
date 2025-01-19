@@ -24,7 +24,7 @@ const database = getDatabase(app);  // Updated to use getDatabase for SDK v9
 // FIREBASE TEST ------------------------------------------------------------------------------------------------------------------------------------------
 
 // Write to the database
-import { reff, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { reff, sett, gett, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 const dbRef = reff(database);
 
