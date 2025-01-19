@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
 //PROGRESS FUNCTIONS ------------------------------------------------------------------------------------------------------------------------------------------
 
   // Update progress and save it to Firebase
-  function updateProgress(profileId) {
-      const chapterInput = document.getElementById(`${profileId}-chapter`);
+  function updateProgress(bookId, profileId) {
+      const chapterInput = document.getElementById(`${bookId}-${profileId}-chapter`);
       const chapterNumber = parseInt(chapterInput.value, 10);
   
       // Validate the chapter number input
@@ -86,27 +86,27 @@ document.addEventListener("DOMContentLoaded", () => {
       // localStorage.setItem(`${bookId}-${profileId}`, chapterNumber);
   
       // Save progress to Firebase using the updated syntax
-      const progressRef = ref(database, `progress/${profileId}`);
+      const progressRef = ref(database, `progress/${bookId}/${profileId}`);
       set(progressRef, {
         chapter: chapterNumber
       }).then(() => {
-        console.log(`Progress saved for ${profileId}: Chapter ${chapterNumber}`);
+        console.log(`Progress saved for ${bookId} - ${profileId}: Chapter ${chapterNumber}`);
       }).catch((error) => {
         console.error("Error saving progress: ", error);
       });
   
       // Calculate progress percentage and update the progress bar
       const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
-      updateProgressBar(profileId, progressPercentage);
+      updateProgressBar(`${bookId}-${profileId}`, progressPercentage);
 
-      console.log(`Progress updated for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
+      console.log(`Progress updated for${bookId} - ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
     }
 
     window.updateProgress = updateProgress;
 
   
   // Load progress for all profiles from Firebase
-  function loadProgress() {
+  function loadProgress(bookId) {
     document.querySelectorAll(".profile").forEach((profile) => {
       const profileId = profile.querySelector(".profile-circle").id.split("-")[0]; // e.g., 'profile1'
 
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       //   const chapterInput = document.getElementById(`${profileId}-chapter`);
       //  if (chapterInput) chapterInput.value = chapterNumber;
 
-      const progressRef = ref(database, `progress/${profileId}`);
+      const progressRef = ref(database, `progress/${bookId}/${profileId}`);
   
       get(progressRef).then((snapshot) => {
         if (snapshot.exists()) {
@@ -130,13 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
           const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
   
           // Update the progress bar and input field
-          updateProgressBar(profileId, progressPercentage);
-          const chapterInput = document.getElementById(`${profileId}-chapter`);
+          updateProgressBar(`${bookId}-${profileId}`, progressPercentage);
+          const chapterInput = document.getElementById(`${bookId}-${profileId}-chapter`);
           if (chapterInput) chapterInput.value = chapterNumber;
   
-          console.log(`Loaded progress for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%)`);
+          console.log(`Loaded progress for ${bookId} - ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%)`);
         } else {
-          console.log(`No progress found for ${profileId}`);
+          console.log(`No progress found for ${bookId} - ${profileId}`);
         }
       }).catch((error) => {
         console.error("Error loading progress: ", error);
