@@ -1,6 +1,6 @@
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { ref, getDatabase, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -14,17 +14,15 @@ const firebaseConfig = {
   measurementId: "G-0MBY6P635G"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);  // Initialize the database reference
+const database = getDatabase(app);  // Updated to use getDatabase for SDK v9
 
-// Get the total number of chapters from the HTML attribute and book ID
+// Get the total number of chapters from the HTML attribute and book ID (no change from local)
 const bookId = document.body.getAttribute("data-book-id");
 const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
 
-// Track the active chapter for comment submission
-let activeChapterId = null;
-
-// Load progress and comments when the page loads
+// Load progress and comments when the page loads (no change from local)
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing...");
   generateChapterSections();
@@ -32,57 +30,78 @@ document.addEventListener("DOMContentLoaded", () => {
   loadComments();
 });
 
-// Update progress for a specific profile
+// Update progress and save it to Firebase
 function updateProgress(profileId) {
-  const chapterInput = document.getElementById(`${profileId}-chapter`);
-  const chapterNumber = parseInt(chapterInput.value, 10);
+    const chapterInput = document.getElementById(`${profileId}-chapter`);
+    const chapterNumber = parseInt(chapterInput.value, 10);
+  
+    // Validate the chapter number input
+    if (isNaN(chapterNumber) || chapterNumber < 0 || chapterNumber > numChapters) {
+      alert(`Please enter a valid chapter number between 0 and ${numChapters}.`);
+      return;
+    }
 
-  if (isNaN(chapterNumber) || chapterNumber < 1 || chapterNumber > numChapters) {
-    alert(`Please enter a valid chapter number between 1 and ${numChapters}.`);
-    return;
-  }
-
-  // Set the progress to Firebase Realtime Database
-  const progressRef = ref(database, 'progress/' + profileId); // Save data under 'progress/profileId'
-  set(progressRef, {
-    chapter: chapterNumber
-  }).then(() => {
-    console.log(`Progress saved for ${profileId}: Chapter ${chapterNumber}`);
-  }).catch((error) => {
-    console.error("Error saving progress: ", error);
-  });
-}
-
-// Load progress for all profiles from Firebase Realtime Database
-function loadProgress() {
-  document.querySelectorAll(".profile").forEach((profile) => {
-    const profileId = profile.querySelector(".profile-circle").id.split("-")[0];
-    const progressRef = ref(database, 'progress/' + profileId); // Get progress for profileId
-
-    // Fetch progress from Firebase
-    get(progressRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const chapterNumber = snapshot.val().chapter;
-        const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
-
-        // Update the progress bar
-        updateProgressBar(profileId, progressPercentage);
-
-        // Update input field with saved chapter number
-        const chapterInput = document.getElementById(`${profileId}-chapter`);
-        if (chapterInput) chapterInput.value = chapterNumber;
-
-        console.log(`Loaded progress for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%)`);
-      } else {
-        console.log(`No progress found for ${profileId}`);
-      }
+    //// Save the progress to localStorage with the bookId
+    // localStorage.setItem(`${bookId}-${profileId}`, chapterNumber);
+  
+    // Save progress to Firebase using the updated syntax
+    const progressRef = ref(database, `progress/${profileId}`);
+    set(progressRef, {
+      chapter: chapterNumber
+    }).then(() => {
+      console.log(`Progress saved for ${profileId}: Chapter ${chapterNumber}`);
     }).catch((error) => {
-      console.error("Error loading progress: ", error);
+      console.error("Error saving progress: ", error);
     });
-  });
-}
+  
+    // Calculate progress percentage and update the progress bar
+    const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
+    updateProgressBar(profileId, progressPercentage);
 
-// Update the visual progress bar
+    console.log(`Progress updated for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%).`);
+  }
+  
+// Load progress for all profiles from Firebase
+function loadProgress() {
+    document.querySelectorAll(".profile").forEach((profile) => {
+      const profileId = profile.querySelector(".profile-circle").id.split("-")[0]; // e.g., 'profile1'
+
+      //const savedChapter = localStorage.getItem(`${bookId}-${profileId}`);
+  
+      //if (savedChapter !== null) {
+      //  const chapterNumber = parseInt(savedChapter, 10);
+      //  const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
+  
+      //  // Update the progress bar and input field
+      //  updateProgressBar(profileId, progressPercentage);
+  
+      //   const chapterInput = document.getElementById(`${profileId}-chapter`);
+      //  if (chapterInput) chapterInput.value = chapterNumber;
+
+      const progressRef = ref(database, `progress/${profileId}`);
+  
+      get(progressRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const chapterNumber = snapshot.val().chapter;
+          const progressPercentage = Math.round((chapterNumber / numChapters) * 100);
+  
+          // Update the progress bar and input field
+          updateProgressBar(profileId, progressPercentage);
+          const chapterInput = document.getElementById(`${profileId}-chapter`);
+          if (chapterInput) chapterInput.value = chapterNumber;
+  
+          console.log(`Loaded progress for ${profileId}: Chapter ${chapterNumber} (${progressPercentage}%)`);
+        } else {
+          console.log(`No progress found for ${profileId}`);
+        }
+      }).catch((error) => {
+        console.error("Error loading progress: ", error);
+      });
+    });
+  }
+  
+
+// Update the visual progress bar (no change from local)
 function updateProgressBar(profileId, progressPercentage) {
   const profileCircle = document.getElementById(`${profileId}-circle`);
   if (profileCircle) {
@@ -96,16 +115,18 @@ function updateProgressBar(profileId, progressPercentage) {
   }
 }
 
-// Dynamically generate chapter sections for comments
+// Dynamically generate chapter sections for comments (no change from local)
 function generateChapterSections() {
-  console.log("Generating chapter sections..."); // Debug log
   const chapterContainer = document.getElementById("chapter-comments");
   if (!chapterContainer) {
     console.error("Chapter container not found!");
     return;
   }
 
-  // Create sections for each chapter
+  // Clear existing content (if any)
+  chapterContainer.innerHTML = "";
+
+  // Create sections for each chapter (no change from local)
   for (let i = 1; i <= numChapters; i++) {
     const chapterHTML = `
       <div class="chapter" id="chapter${i}">
@@ -114,27 +135,15 @@ function generateChapterSections() {
         <div class="comment-section" style="display: none;">
           <div class="comment-container" id="comment-container-chapter${i}"></div>
           <input type="text" id="comment-input-chapter${i}" placeholder="Add your thoughts...">
-          <button type="button" id="submit-button-chapter${i}">Submit</button>
+          <button onclick="submitComment('chapter${i}')">Submit</button>
         </div>
       </div>
     `;
     chapterContainer.innerHTML += chapterHTML;
-
-    // Add event listener for the submit button
-    const submitButton = document.getElementById(`submit-button-chapter${i}`);
-    if (submitButton) {
-      submitButton.addEventListener("click", () => {
-        console.log(`Submit button clicked for chapter ${i}`); // Debug log
-        submitComment(`chapter${i}`); // Pass the chapterId dynamically
-      });
-    } else {
-      console.error(`Submit button not found for chapter ${i}`);
-    }
   }
 }
 
-
-// Toggle visibility of the comment section for a chapter
+// Toggle visibility of the comment section for a chapter (no change from local)
 function toggleCommentSection(chapterId) {
   const commentSection = document.querySelector(`#${chapterId} .comment-section`);
   if (commentSection) {
@@ -144,67 +153,63 @@ function toggleCommentSection(chapterId) {
   }
 }
 
-// Ensure the function is globally accessible
-window.toggleCommentSection = function(chapterId) {
-  const commentSection = document.querySelector(`#${chapterId} .comment-section`);
-  if (commentSection) {
-    const currentDisplay = getComputedStyle(commentSection).display;
-    commentSection.style.display = currentDisplay === "none" ? "block" : "none";
-  } else {
-    console.error(`Comment section not found for ${chapterId}.`);
-  }
-};
-
 // Submit a comment for a chapter and save it to Firebase
 function submitComment(chapterId) {
-  if (!chapterId) {
-    console.error("No chapterId provided to submitComment.");
-    return;
-  }
+    const commentInput = document.getElementById(`comment-input-${chapterId}`);
+    const commentText = commentInput.value.trim();
+  
+    if (commentText === "") {
+      alert("Please enter a valid comment.");
+      return;
+    }
+  
+    const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+    const newComment = document.createElement("div");
+    newComment.classList.add("comment");
+    newComment.innerHTML = `<p><strong>You:</strong> ${commentText}</p>`;
+    commentContainer.appendChild(newComment);
 
-  const commentInput = document.getElementById(`comment-input-${chapterId}`);
-  if (!commentInput) {
-    console.error(`Comment input field not found for ${chapterId}`);
-    return;
-  }
-
-  const commentText = commentInput.value.trim();
-  if (commentText === "") {
-    alert("Please enter a valid comment.");
-    return;
-  }
-
-  const commentsRef = ref(database, `comments/${bookId}/${chapterId}`);
-  const newCommentRef = push(commentsRef);
-
-  set(newCommentRef, {
-    text: commentText,
-    profileId: "user", // Replace with actual profile ID if needed
-    timestamp: Date.now(),
-  })
-    .then(() => {
+    //// Save the comment to localStorage with the bookId
+    //const savedComments = JSON.parse(localStorage.getItem(`${bookId}-${chapterId}`)) || [];
+    //savedComments.push(commentText);
+    //localStorage.setItem(`${bookId}-${chapterId}`, JSON.stringify(savedComments));
+  
+    // Save the comment to Firebase using the updated syntax
+    const commentsRef = ref(database, `comments/${bookId}/${chapterId}`);
+    const newCommentRef = push(commentsRef);
+    set(newCommentRef, {
+      text: commentText,
+      profileId: "user",  // Replace with actual profile ID if you have user authentication
+      timestamp: Date.now(),
+    }).then(() => {
       console.log(`Comment saved for ${chapterId}: ${commentText}`);
-      const commentContainer = document.getElementById(`comment-container-${chapterId}`);
-      const newComment = document.createElement("div");
-      newComment.classList.add("comment");
-      newComment.innerHTML = `<p><strong>You:</strong> ${commentText}</p>`;
-      commentContainer.appendChild(newComment);
-      commentInput.value = ""; // Clear input field
-    })
-    .catch((error) => {
+      commentInput.value = "";  // Clear the input field
+    }).catch((error) => {
       console.error("Error saving comment: ", error);
     });
-}
+
+    commentInput.value = "";
+
+  }
+  
 
 // Load saved comments from Firebase for all chapters
 function loadComments() {
-  for (let i = 1; i <= numChapters; i++) {
-    const chapterId = `chapter${i}`;
-    const commentsRef = ref(database, `comments/${bookId}/${chapterId}`);
-    const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+    for (let i = 1; i <= numChapters; i++) {
+      const chapterId = `chapter${i}`;
+      //const savedComments = JSON.parse(localStorage.getItem(`${bookId}-${chapterId}`)) || [];
+      //const commentContainer = document.getElementById(`comment-container-${chapterId}`);
+      const commentsRef = ref(database, `comments/${bookId}/${chapterId}`);
+      const commentContainer = document.getElementById(`comment-container-${chapterId}`);
 
-    get(commentsRef)
-      .then((snapshot) => {
+      //savedComments.forEach((comment) => {
+      //  const commentDiv = document.createElement("div");
+      //  commentDiv.classList.add("comment");
+      //  commentDiv.innerHTML = `<p><strong>You:</strong> ${comment}</p>`;
+      //  commentContainer.appendChild(commentDiv);
+      //});
+  
+      get(commentsRef).then((snapshot) => {
         if (snapshot.exists()) {
           const comments = snapshot.val();
           Object.values(comments).forEach((comment) => {
@@ -214,11 +219,11 @@ function loadComments() {
             commentContainer.appendChild(commentDiv);
           });
         } else {
-          console.log(`No comments found for ${chapterId}.`);
+          console.log(`No comments found for ${chapterId}`);
         }
-      })
-      .catch((error) => {
-        console.error(`Error loading comments for ${chapterId}:`, error);
+      }).catch((error) => {
+        console.error("Error loading comments: ", error);
       });
+    }
   }
-}
+  
