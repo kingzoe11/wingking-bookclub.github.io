@@ -21,6 +21,9 @@ const database = getDatabase(app);  // Initialize the database reference
 const bookId = document.body.getAttribute("data-book-id");
 const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
 
+// Track the active chapter for comment submission
+let activeChapterId = null;
+
 // Load progress and comments when the page loads
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing...");
@@ -29,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadComments();
 });
 
+// Update progress for a specific profile
 function updateProgress(profileId) {
   const chapterInput = document.getElementById(`${profileId}-chapter`);
   const chapterNumber = parseInt(chapterInput.value, 10);
@@ -122,14 +126,14 @@ function generateChapterSections() {
     const submitButton = document.getElementById(`submit-button-chapter${i}`);
     submitButton.addEventListener("click", function() {
       console.log(`Button clicked for chapter ${i}`); // Debug log
-      submitComment(`chapter${i}`);
+      submitComment(); // Submit comment for the active chapter
     });
   }
 }
 
-
 // Toggle visibility of the comment section for a chapter
 function toggleCommentSection(chapterId) {
+  activeChapterId = chapterId;  // Set the active chapter when toggled
   const commentSection = document.querySelector(`#${chapterId} .comment-section`);
   if (commentSection) {
     const currentDisplay = getComputedStyle(commentSection).display;
@@ -139,16 +143,16 @@ function toggleCommentSection(chapterId) {
   }
 }
 
-// Make the function globally accessible
-window.toggleCommentSection = toggleCommentSection;
-
-console.log(`Toggling: ${chapterId}`, commentSection);
-
 // Submit comments to Firebase Realtime Database
-function submitComment(chapterId) {
-  const commentInput = document.getElementById(`comment-input-chapter${chapterId}`);
+function submitComment() {
+  if (!activeChapterId) {
+    console.error("No active chapter selected.");
+    return;
+  }
+
+  const commentInput = document.getElementById(`comment-input-${activeChapterId}`);
   if (!commentInput) {
-    console.error(`Comment input not found for ${chapterId}`);
+    console.error(`Comment input not found for ${activeChapterId}`);
     return;
   }
 
@@ -159,19 +163,19 @@ function submitComment(chapterId) {
     return;
   }
 
-  console.log(`Submitting comment for ${chapterId}: ${commentText}`);
+  console.log(`Submitting comment for ${activeChapterId}: ${commentText}`);
 
   // Get the comments reference for the chapter
-  const commentsRef = ref(database, `comments/${bookId}/${chapterId}`); // comments/bookId/chapterId
+  const commentsRef = ref(database, `comments/${bookId}/${activeChapterId}`); // comments/bookId/chapterId
   const newCommentKey = push(commentsRef).key; // Generate a unique key for the new comment
 
   // Add the comment to Firebase under this unique key
-  set(ref(database, `comments/${bookId}/${chapterId}/${newCommentKey}`), {
+  set(ref(database, `comments/${bookId}/${activeChapterId}/${newCommentKey}`), {
     text: commentText,
     profileId: 'user', // Replace with actual profileId if needed
     timestamp: Date.now() // Optional: Add a timestamp for sorting comments
   }).then(() => {
-    console.log(`Comment saved for chapter ${chapterId}: ${commentText}`);
+    console.log(`Comment saved for chapter ${activeChapterId}: ${commentText}`);
 
     // After submitting, clear the input field and reload comments (optional)
     commentInput.value = ""; // Clear input field after submission
