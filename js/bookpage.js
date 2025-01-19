@@ -104,9 +104,6 @@ function generateChapterSections() {
     console.error("Chapter container not found!");
     return;
   }
-  
-  // Clear existing content (if any)
-  chapterContainer.innerHTML = "";
 
   // Create sections for each chapter
   for (let i = 1; i <= numChapters; i++) {
