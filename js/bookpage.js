@@ -1,8 +1,7 @@
-// Initialize Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { ref, getDatabase, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-// Your Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDauBHESMBKtdbh_Xfy6UQhm6M5toeoahU",
   authDomain: "wingkink-book-club.firebaseapp.com",
@@ -14,8 +13,16 @@ const firebaseConfig = {
   measurementId: "G-0MBY6P635G"
 };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app); // Initialize the database reference
+// Initialize Firebase app if not already initialized
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
+
+// Initialize the database reference
+const database = getDatabase(app);
 
 // Get book ID and number of chapters from HTML attributes
 const bookId = document.body.getAttribute("data-book-id");
