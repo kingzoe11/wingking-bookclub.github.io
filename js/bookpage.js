@@ -143,6 +143,18 @@ function toggleCommentSection(chapterId) {
   }
 }
 
+// Ensure the function is globally accessible
+window.toggleCommentSection = function(chapterId) {
+  const commentSection = document.querySelector(`#${chapterId} .comment-section`);
+  if (commentSection) {
+    const currentDisplay = getComputedStyle(commentSection).display;
+    commentSection.style.display = currentDisplay === "none" ? "block" : "none";
+  } else {
+    console.error(`Comment section not found for ${chapterId}.`);
+  }
+};
+
+
 // Submit comments to Firebase Realtime Database
 function submitComment() {
   if (!activeChapterId) {
