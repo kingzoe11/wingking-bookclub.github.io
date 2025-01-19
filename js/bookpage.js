@@ -1,3 +1,5 @@
+// FIREBASE SET UP  ------------------------------------------------------------------------------------------------------------------------------------------
+
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
 import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
@@ -19,17 +21,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);  // Updated to use getDatabase for SDK v9
 
-
-//testing data base
-// ------------------------------------------------------------------------------------------------------------------------------------------
+// FIREBASE TEST ------------------------------------------------------------------------------------------------------------------------------------------
 
 // Write to the database
-import { ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { reff, set, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
-const dbRef = ref(database);
+const dbRef = reff(database);
 
 // Test writing
-set(ref(database, 'test/'), {
+set(reff(database, 'test/'), {
   username: "test_user",
   message: "Hello, Firebase!"
 })
@@ -53,8 +53,8 @@ get(child(dbRef, 'test/'))
     console.error("Error reading data:", error);
   });
 
-// ------------------------------------------------------------------------------------------------------------------------------------------
 
+// PAGE LOGISTICS AND SET UP -------------------------------------------------------------------------------------------------------------------------------
 
 // Get the total number of chapters from the HTML attribute and book ID (no change from local)
 const bookId = document.body.getAttribute("data-book-id");
@@ -67,6 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadProgress();
   loadComments();
 });
+
+//PROGRESS FUNCTIONS ------------------------------------------------------------------------------------------------------------------------------------------
 
 // Update progress and save it to Firebase
 function updateProgress(profileId) {
@@ -152,6 +154,9 @@ function updateProgressBar(profileId, progressPercentage) {
     console.error(`Profile circle not found for ${profileId}.`);
   }
 }
+
+// DISCUSSION BOARD FUNCTIONS -------------------------------------------------------------------------------------------------------------------------------------
+
 
 // Dynamically generate chapter sections for comments (no change from local)
 function generateChapterSections() {
