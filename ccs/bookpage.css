@@ -82,7 +82,7 @@ body, h1, h2, p, input, button {
   }
   
   .profile-circle::after {
-    content: attr(data-progress) '%';
+    content: attr(data-progress) '';
     position: absolute;
   }
   
