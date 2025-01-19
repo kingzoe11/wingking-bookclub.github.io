@@ -24,6 +24,7 @@ if (!getApps().length) {
 // Initialize the database reference
 const database = getDatabase(app);
 
+
 // Get book ID and number of chapters from HTML attributes
 const bookId = document.body.getAttribute("data-book-id");
 const numChapters = parseInt(document.body.getAttribute("data-num-chapters"), 10);
@@ -63,10 +64,7 @@ function generateChapterSections() {
   }
 }
 
-console.log(typeof toggleCommentSection); // Should log "function"
-
 // Toggle visibility of the comment section for a chapter
-// Ensure this script is not wrapped in a module or block scope
 function toggleCommentSection(chapterId) {
   const commentSection = document.querySelector(`#${chapterId} .comment-section`);
   if (commentSection) {
@@ -75,7 +73,6 @@ function toggleCommentSection(chapterId) {
     console.error(`Comment section not found for ${chapterId}.`);
   }
 }
-
 
 // Submit a comment for a chapter and save it to Firebase
 function submitComment(chapterId) {
