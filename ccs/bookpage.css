@@ -194,6 +194,7 @@ body, h1, h2, p, input, button {
     background-color: #45a049;
   }
   
-  .chapter-comments.has-comments h3 {
-    color: #4CAF50; /* Green */
+/* Style for chapters with comments */
+.chapter.has-comments h3 {
+  color: #4CAF50; /* Green for chapters with comments */
 }
