@@ -14,7 +14,7 @@ window.addEventListener("scroll", function() {
 });
 
 // The correct 4-digit code
-const correctCode = "012125";
+const correctCode = "002125";
 
 // Get the modal and other necessary elements
 const modal = document.getElementById("codeModal");
