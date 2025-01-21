@@ -252,6 +252,8 @@ function loadComments() {
       const commentsRef = ref(database, `comments/${bookId}/${chapterId}`);
       const commentContainer = document.getElementById(`comment-container-${chapterId}`);
 
+      const chapterElement = document.getElementById(chapterId);  // Get the chapter div NEW
+
       //savedComments.forEach((comment) => {
       //  const commentDiv = document.createElement("div");
       //  commentDiv.classList.add("comment");
@@ -267,8 +269,11 @@ function loadComments() {
             commentDiv.classList.add("comment");
             commentDiv.innerHTML = `<p><strong>${comment.profileId}:</strong> ${comment.text}</p>`;
             commentContainer.appendChild(commentDiv);
-            section.classList.add('has-comments');
           });
+
+            // If comments exist, highlight the chapter header
+        chapterElement.classList.add('has-comments');
+
         } else {
           console.log(`No comments found for ${chapterId}`);
         }
@@ -277,5 +282,4 @@ function loadComments() {
       });
     }
   }
-  
   
