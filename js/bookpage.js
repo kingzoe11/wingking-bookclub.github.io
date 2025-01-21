@@ -267,6 +267,7 @@ function loadComments() {
             commentDiv.classList.add("comment");
             commentDiv.innerHTML = `<p><strong>${comment.profileId}:</strong> ${comment.text}</p>`;
             commentContainer.appendChild(commentDiv);
+            section.classList.add('has-comments');
           });
         } else {
           console.log(`No comments found for ${chapterId}`);
@@ -278,40 +279,3 @@ function loadComments() {
   }
   
   
-// Function to check and update header color if comments exist
-function updateChapterHeaders() {
-  // Select all chapter comment sections
-  const chapterComments = document.querySelectorAll('.chapter-comments');
-  
-  chapterComments.forEach((section) => {
-      // Check if the section has any visible comments
-      const comments = section.querySelectorAll('.comment');
-      if (comments.length > 0) {
-          // Add the 'has-comments' class to the parent section
-          section.classList.add('has-comments');
-      } else {
-          // Remove the 'has-comments' class if no comments exist
-          section.classList.remove('has-comments');
-      }
-  });
-}
-
-// Call the function to initialize
-updateChapterHeaders();
-
-// Optional: Add event listeners to dynamically update headers when comments are added
-document.addEventListener('submit', (e) => {
-  if (e.target.matches('.comment-section form')) {
-      e.preventDefault(); // Prevent default form submission if needed
-      // Simulate adding a comment (e.g., via AJAX or direct DOM manipulation)
-      const input = e.target.querySelector('input');
-      if (input && input.value.trim() !== '') {
-          const newComment = document.createElement('div');
-          newComment.classList.add('comment');
-          newComment.textContent = input.value;
-          e.target.closest('.comment-section').prepend(newComment); // Add the comment
-          input.value = ''; // Clear the input
-      }
-      setTimeout(updateChapterHeaders, 100); // Re-run the function after the DOM updates
-  }
-});
